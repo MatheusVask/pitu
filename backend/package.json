@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "start": "yarn tsc && node ./dist/server.js"
+  },
   "dependencies": {
     "@types/express": "^4.17.9",
     "express": "^4.17.1",
