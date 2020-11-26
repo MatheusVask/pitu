@@ -1,9 +1,8 @@
-import {Request, Response} from 'express'
+import {Request, response, Response} from 'express'
 import {Link} from '../models/link'
+import linksRepository from '../models/linksRepository'
 
 
-const links: Link[] = []
-let proxId = 1;
 
 function genCode(){
     let text = ''
@@ -14,38 +13,38 @@ function genCode(){
     return text
 }
 
-function postLink(request: Request, response: Response){
+async function postLink(request: Request, response: Response){
     const link = request.body as Link;
-    link.id = proxId++
     link.code = genCode()
     link.hits = 0
-    links.push(link)
+    const result = await linksRepository.add(link)
+    if(!result.id){return response.sendStatus(400)}
+    link.id = result.id;
     return response.status(201).json(link)
 }
 
 
 
-function getLink(request: Request, response: Response){
+async function getLink(request: Request, response: Response){
     const code = request.params.code as string;
-    const link = links.find(item => item.code === code);
+    const link = await linksRepository.findByCode(code)
     if(!link){
-        return response.status(404).json({error: 'URL not found'})
+        return response.sendStatus(404)
     }
-    return response.status(200).json(link)
+    return response.json(link)
 }
 
 
 
 function hitLink(request: Request, response: Response){
     const code = request.params.code as string;
-    const indexLinks = links.findIndex(item => item.code === code)
+    const link = linksRepository.hit(code)
 
-    if(indexLinks < 0){
+    if(!link){
         return response.sendStatus(404)
     }
-    links[indexLinks].hits!++;
 
-    return response.status(200).json(links[indexLinks])
+    return response.status(200).json(link)
 }
 
 
